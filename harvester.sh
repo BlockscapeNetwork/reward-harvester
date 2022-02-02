@@ -11,6 +11,7 @@ VALOPER="" # Valoper address of the validator to withdraw the staking rewards fr
 ADDR="" # Address to delegate the staking rewards to
 NODE_ADDR="" # RPC address to make calls against, i.e. tcp://host:port
 RESERVE=0 # Amount of tokens to keep in reserve
+MIN_DELEGATION=0 # Minimum amount of tokens to delegate
 INTERVAL_SEC=0 # Interval in seconds to make withdrawals and delegations
 
 ### Routine
@@ -31,6 +32,13 @@ while true; do
        	echo "There's nothing to delegate, skipping cycle..."
         sleep $INTERVAL_SEC
        	continue
+    fi
+
+    # Check if the diff is greater than or equal to the minimum delegation amount.
+    if [ ! $diff -lt $MIN_DELEGATION ]; then
+        echo "Minimum delegation amount not reached yet, skipping cycle..."
+        sleep $INTERVAL_SEC
+        continue
     fi
 
     echo "Total balance:   $total_balance$DENOM"
