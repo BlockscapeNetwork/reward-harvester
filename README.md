@@ -5,7 +5,7 @@ Script for periodically withdrawing staking rewards and delegating them to a val
 ## Prerequisites
 
 * Full or validator node with open RPC port
-* Account/Key used to withdraw/stake rewards
+* Account/Key (must be in keyring-backend `test`) used to withdraw and stake rewards
 
 ## Usage
 
