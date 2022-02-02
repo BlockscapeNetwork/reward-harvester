@@ -2,14 +2,15 @@
 
 ### Configuration
 
-BINARY="" # Name of the binary, i.e. gaia
-CHAIN_ID="" # Chain ID, i.e. cosmoshub-4
-DENOM="" # Smallest token denomination, i.e. uatom
-ACCOUNT="" # Name of the account/key
-GAS_PRICES=0.0 # Gas prices in smallest token denomination, i.e. uatom
-VALOPER="" # Valoper address of the validator to withdraw the staking rewards from
-ADDR="" # Address to delegate the staking rewards to
+BINARY="" # Name of the binary, e.g. gaiad
+CHAIN_ID="" # Chain ID, e.g. cosmoshub-4
+DENOM="" # Smallest token denomination, e.g. uatom
+ACCOUNT="" # Name of the account/key, e.g. validator
+GAS_PRICES=0.0 # Gas prices in smallest token denomination
+VALOPER="" # Valoper address of the validator to withdraw the staking rewards from, i.e. cosmosvaloper1...
+ADDR="" # Address to delegate the staking rewards to, i.e. cosmos1...
 NODE_ADDR="" # RPC address to make calls against, i.e. tcp://host:port
+WITHDRAW_THRESHOLD=0 # Minimum amount of tokens that need to have accumulated from rewards in order for them to be withdrawn
 RESERVE=0 # Amount of tokens to keep in reserve
 MIN_DELEGATION=0 # Minimum amount of tokens to delegate
 INTERVAL_SEC=0 # Interval in seconds to make withdrawals and delegations
@@ -17,6 +18,14 @@ INTERVAL_SEC=0 # Interval in seconds to make withdrawals and delegations
 ### Routine
 
 while true; do
+    # Check accumulated rewards.
+    rewards=$($BINARY q distribution rewards $VALOPER --node $NODE_ADDR)
+    commission=$($BINARY q distribution commission $VALOPER --node $NODE_ADDR)
+    if [ $(($rewards+$commission)) -lt $WITHDRAW_THRESHOLD ]; then
+        echo "Withdraw threshold not reached yet, skipping cycle..."
+        continue
+    fi
+
     # Withdraw rewards from the validator account.
     echo "Fetching rewards for $VALOPER..."
     $BINARY tx distribution withdraw-rewards $VALOPER --from $ACCOUNT --chain-id $CHAIN_ID --commission --keyring-backend test -y --gas auto --gas-adjustment 1.5 --gas-prices $GAS_PRICES$DENOM -b block --node $NODE_ADDR
