@@ -38,7 +38,7 @@ while true; do
 
     # Retrieve the new balance and calculate the delegation amount.
     echo "Checking balance..."
-    total_balance=$($BINARY q bank balances $SD_ADDR --node $NODE_ADDR --output json | jq '.balances[] | select(.denom == "${DENOM}") | .amount') | sed 's/\"//g'
+    total_balance=$($BINARY q bank balances $SD_ADDR --node $NODE_ADDR --output json | jq '.balances[] | select(.denom == "${DENOM}") | .amount' | sed 's/\"//g')
     diff=$((total_balance-RESERVE))
 
     # If there's nothing to delegate, wait for the next cycle.
