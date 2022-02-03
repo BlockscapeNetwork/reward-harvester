@@ -20,10 +20,10 @@ INTERVAL_SEC=0 # Interval in seconds to make withdrawals and delegations
 while true; do
     # Check accumulated rewards.
     echo "Retrieving rewards in $DENOM..."
-    rewards=$($BINARY q distribution rewards $ADDR $VALOPER --node $NODE_ADDR --output json | jq '.rewards[].amount' | sed 's/\"//g' | sed 's/\..*//g')
+    rewards=$($BINARY q distribution rewards $ADDR $VALOPER --node $NODE_ADDR --output json | jq '.rewards[] | select(.denom == "${DENOM}") | .amount' | sed 's/\"//g' | sed 's/\..*//g')
 
     echo "Retrieving commission in $DENOM..."
-    commission=$($BINARY q distribution commission $VALOPER --node $NODE_ADDR --output json | jq '.commission[].amount' | sed 's/\"//g' | sed 's/\..*//g')
+    commission=$($BINARY q distribution commission $VALOPER --node $NODE_ADDR --output json | jq '.commission[] | select(.denom == "${DENOM}") | .amount' | sed 's/\"//g' | sed 's/\..*//g')
 
     if [ $((rewards+commission)) -lt $WITHDRAW_THRESHOLD ]; then
         echo "Withdraw threshold not reached yet, skipping cycle..."
@@ -38,7 +38,7 @@ while true; do
 
     # Retrieve the new balance and calculate the delegation amount.
     echo "Checking balance..."
-    total_balance=$($BINARY q bank balances $SD_ADDR --node $NODE_ADDR | grep amount: | grep -oP 'amount: "\K[^"]+')
+    total_balance=$($BINARY q bank balances $SD_ADDR --node $NODE_ADDR --output json | jq '.balances[] | select(.denom == "${DENOM}") | .amount') | sed 's/\"//g'
     diff=$((total_balance-RESERVE))
 
     # If there's nothing to delegate, wait for the next cycle.
