@@ -19,8 +19,8 @@ INTERVAL_SEC=0 # Interval in seconds to make withdrawals and delegations
 
 while true; do
     # Check accumulated rewards.
-    rewards=$($BINARY q distribution rewards $VALOPER --node $NODE_ADDR)
-    commission=$($BINARY q distribution commission $VALOPER --node $NODE_ADDR)
+    rewards=$($BINARY q distribution rewards $ADDR $VALOPER --node $NODE_ADDR --output json | jq '.rewards[].amount' | sed 's/\"//g' | sed 's/\..*//g')
+    commission=$($BINARY q distribution commission $VALOPER --node $NODE_ADDR --output json | jq '.commission[].amount' | sed 's/\"//g' | sed 's/\..*//g')
     if [ $(($rewards+$commission)) -lt $WITHDRAW_THRESHOLD ]; then
         echo "Withdraw threshold not reached yet, skipping cycle..."
         continue
