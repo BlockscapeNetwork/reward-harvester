@@ -31,7 +31,7 @@ while true; do
     $BINARY tx distribution withdraw-rewards $VALOPER --from $ACCOUNT --chain-id $CHAIN_ID --commission --keyring-backend test -y --gas auto --gas-adjustment 1.5 --gas-prices $GAS_PRICES$DENOM -b block --node $NODE_ADDR
     sleep 10
 
-    # Check the balance and calculate the amount to be delegated.
+    # Retrieve the new balance and calculate the delegation amount.
     echo "Checking balance..."
     total_balance=$($BINARY q bank balances $SD_ADDR --node $NODE_ADDR | grep amount: | grep -oP 'amount: "\K[^"]+')
     diff=$((total_balance-$RESERVE))
