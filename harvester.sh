@@ -24,7 +24,8 @@ while true; do
 
     echo "Retrieving commission in $DENOM..."
     commission=$($BINARY q distribution commission $VALOPER --node $NODE_ADDR --output json | jq '.commission[].amount' | sed 's/\"//g' | sed 's/\..*//g')
-    if [ $(($rewards+$commission)) -lt $WITHDRAW_THRESHOLD ]; then
+
+    if [ $((rewards+commission)) -lt $WITHDRAW_THRESHOLD ]; then
         echo "Withdraw threshold not reached yet, skipping cycle..."
         continue
     fi
@@ -37,7 +38,7 @@ while true; do
     # Retrieve the new balance and calculate the delegation amount.
     echo "Checking balance..."
     total_balance=$($BINARY q bank balances $SD_ADDR --node $NODE_ADDR | grep amount: | grep -oP 'amount: "\K[^"]+')
-    diff=$((total_balance-$RESERVE))
+    diff=$((total_balance-RESERVE))
 
     # If there's nothing to delegate, wait for the next cycle.
     if [ $diff -lt 1 ]; then
