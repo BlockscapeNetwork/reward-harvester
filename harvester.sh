@@ -19,14 +19,16 @@ INTERVAL_SEC=0 # Interval in seconds to make withdrawals and delegations
 
 while true; do
     # Check accumulated rewards.
-    echo "Retrieving rewards in $DENOM..."
-    rewards=$($BINARY q distribution rewards $ADDR $VALOPER --node $NODE_ADDR --output json | jq '.rewards[] | select(.denom == "${DENOM}") | .amount' | sed 's/\"//g' | sed 's/\..*//g')
+    echo "Retrieving rewards..."
+    rewards=$($BINARY q distribution rewards $ADDR $VALOPER --node $NODE_ADDR --output json | jq '.rewards[] | select(.denom == "'$DENOM'") | .amount' | sed 's/\"//g' | sed 's/\..*//g')
+    echo $rewards$DENOM
 
-    echo "Retrieving commission in $DENOM..."
-    commission=$($BINARY q distribution commission $VALOPER --node $NODE_ADDR --output json | jq '.commission[] | select(.denom == "${DENOM}") | .amount' | sed 's/\"//g' | sed 's/\..*//g')
+    echo "Retrieving commission..."
+    commission=$($BINARY q distribution commission $VALOPER --node $NODE_ADDR --output json | jq '.commission[] | select(.denom == "'$DENOM'") | .amount' | sed 's/\"//g' | sed 's/\..*//g')
+    echo $commission$DENOM
 
     if [ $((rewards+commission)) -lt $WITHDRAW_THRESHOLD ]; then
-        echo "Withdraw threshold not reached yet, skipping cycle..."
+        echo "Withdraw threshold not reached yet ($((rewards+commission)) < $WITHDRAW_THRESHOLD), skipping cycle..."
         sleep $INTERVAL_SEC
         continue
     fi
@@ -38,7 +40,7 @@ while true; do
 
     # Retrieve the new balance and calculate the delegation amount.
     echo "Checking balance..."
-    total_balance=$($BINARY q bank balances $SD_ADDR --node $NODE_ADDR --output json | jq '.balances[] | select(.denom == "${DENOM}") | .amount' | sed 's/\"//g')
+    total_balance=$($BINARY q bank balances $SD_ADDR --node $NODE_ADDR --output json | jq '.balances[] | select(.denom == "'$DENOM'") | .amount' | sed 's/\"//g')
     diff=$((total_balance-RESERVE))
 
     # If there's nothing to delegate, wait for the next cycle.
@@ -50,7 +52,7 @@ while true; do
 
     # Check if the diff is greater than or equal to the minimum delegation amount.
     if [ ! $diff -lt $MIN_DELEGATION ]; then
-        echo "Minimum delegation amount not reached yet, skipping cycle..."
+        echo "Minimum delegation amount not reached yet ($diff < $MIN_DELEGATION), skipping cycle..."
         sleep $INTERVAL_SEC
         continue
     fi
