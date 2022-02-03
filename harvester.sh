@@ -27,6 +27,7 @@ while true; do
 
     if [ $((rewards+commission)) -lt $WITHDRAW_THRESHOLD ]; then
         echo "Withdraw threshold not reached yet, skipping cycle..."
+        sleep $INTERVAL_SEC
         continue
     fi
 
