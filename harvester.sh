@@ -18,27 +18,26 @@ INTERVAL_SEC=0 # Interval in seconds to make withdrawals and delegations
 ### Routine
 
 while true; do
-    # Check accumulated rewards.
-    echo "Retrieving rewards..."
+    echo "Checking delegation rewards..."
     rewards=$($BINARY q distribution rewards $ADDR $VALOPER --node $NODE_ADDR --output json | jq '.rewards[] | select(.denom == "'$DENOM'") | .amount' | sed 's/\"//g' | sed 's/\..*//g')
     echo $rewards$DENOM
 
-    echo "Retrieving commission..."
+    echo "Checking validator commission..."
     commission=$($BINARY q distribution commission $VALOPER --node $NODE_ADDR --output json | jq '.commission[] | select(.denom == "'$DENOM'") | .amount' | sed 's/\"//g' | sed 's/\..*//g')
     echo $commission$DENOM
 
-    if [ $((rewards+commission)) -lt $WITHDRAW_THRESHOLD ]; then
+    # Fetch rewards & commission if they exceed the specified withdraw threshold.
+    if [ ! $((rewards+commission)) -lt $WITHDRAW_THRESHOLD ]; then
+        echo "Withdrawing delegation rewards and validator commission for $VALOPER..."
+        $BINARY tx distribution withdraw-rewards $VALOPER --from $ACCOUNT --chain-id $CHAIN_ID --commission --keyring-backend test -y --gas auto --gas-adjustment 1.5 --gas-prices $GAS_PRICES$DENOM -b block --node $NODE_ADDR
+        sleep 30
+    else
         echo "Withdraw threshold not reached yet ($((rewards+commission))$DENOM < $WITHDRAW_THRESHOLD$DENOM), skipping cycle..."
         sleep $INTERVAL_SEC
         continue
     fi
 
-    # Withdraw rewards from the validator account.
-    echo "Fetching rewards for $VALOPER..."
-    $BINARY tx distribution withdraw-rewards $VALOPER --from $ACCOUNT --chain-id $CHAIN_ID --commission --keyring-backend test -y --gas auto --gas-adjustment 1.5 --gas-prices $GAS_PRICES$DENOM -b block --node $NODE_ADDR
-    sleep 10
-
-    # Retrieve the new balance and calculate the delegation amount.
+    # Check the new balance and calculate the delegation amount.
     echo "Checking balance..."
     total_balance=$($BINARY q bank balances $ADDR --node $NODE_ADDR --output json | jq '.balances[] | select(.denom == "'$DENOM'") | .amount' | sed 's/\"//g')
     diff=$((total_balance-RESERVE))
