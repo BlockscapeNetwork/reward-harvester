@@ -28,7 +28,7 @@ while true; do
     echo $commission$DENOM
 
     if [ $((rewards+commission)) -lt $WITHDRAW_THRESHOLD ]; then
-        echo "Withdraw threshold not reached yet ($((rewards+commission)) < $WITHDRAW_THRESHOLD), skipping cycle..."
+        echo "Withdraw threshold not reached yet ($((rewards+commission))$DENOM < $WITHDRAW_THRESHOLD$DENOM), skipping cycle..."
         sleep $INTERVAL_SEC
         continue
     fi
@@ -52,7 +52,7 @@ while true; do
 
     # Check if the diff is greater than or equal to the minimum delegation amount.
     if [ ! $diff -lt $MIN_DELEGATION ]; then
-        echo "Minimum delegation amount not reached yet ($diff < $MIN_DELEGATION), skipping cycle..."
+        echo "Minimum delegation amount not reached yet ($diff$DENOM < $MIN_DELEGATION$DENOM), skipping cycle..."
         sleep $INTERVAL_SEC
         continue
     fi
