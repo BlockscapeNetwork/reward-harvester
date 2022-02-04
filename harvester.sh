@@ -51,7 +51,7 @@ while true; do
     fi
 
     # Check if the diff is greater than or equal to the minimum delegation amount.
-    if [ ! $diff -lt $MIN_DELEGATION ]; then
+    if [ $diff -lt $MIN_DELEGATION ]; then
         echo "Minimum delegation amount not reached yet ($diff$DENOM < $MIN_DELEGATION$DENOM), skipping cycle..."
         sleep $INTERVAL_SEC
         continue
