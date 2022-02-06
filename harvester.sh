@@ -29,8 +29,8 @@ while true; do
     # Fetch rewards & commission if they exceed the specified withdraw threshold.
     if [ ! $((rewards+commission)) -lt $WITHDRAW_THRESHOLD ]; then
         echo "Withdrawing delegation rewards and validator commission for $VALOPER..."
-        $BINARY tx distribution withdraw-rewards $VALOPER --from $ACCOUNT --chain-id $CHAIN_ID --commission --keyring-backend test -y --gas auto --gas-adjustment 1.5 --gas-prices $GAS_PRICES$DENOM -b block --node $NODE_ADDR
-        sleep 30
+        $BINARY tx distribution withdraw-rewards $VALOPER --from $ACCOUNT --chain-id $CHAIN_ID --commission --keyring-backend test -y --gas auto --gas-adjustment 1.5 --gas-prices $GAS_PRICES$DENOM --node $NODE_ADDR --output json
+        sleep 60
     else
         echo "Withdraw threshold not reached yet ($((rewards+commission))$DENOM < $WITHDRAW_THRESHOLD$DENOM), skipping cycle..."
         sleep $INTERVAL_SEC
@@ -63,6 +63,6 @@ while true; do
 
     # Self-delegate the withdrawn rewards to our validator.
     echo "Initiating self-delegation of $diff$DENOM..."
-    $BINARY tx staking delegate $VALOPER $diff$DENOM --from $ACCOUNT --chain-id $CHAIN_ID --keyring-backend test -y --gas auto --gas-adjustment 1.5 --gas-prices $GAS_PRICES$DENOM -b block --node $NODE_ADDR
+    $BINARY tx staking delegate $VALOPER $diff$DENOM --from $ACCOUNT --chain-id $CHAIN_ID --keyring-backend test -y --gas auto --gas-adjustment 1.5 --gas-prices $GAS_PRICES$DENOM --node $NODE_ADDR
     sleep $INTERVAL_SEC
 done
