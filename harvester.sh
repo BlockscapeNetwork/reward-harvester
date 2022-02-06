@@ -42,13 +42,6 @@ while true; do
     total_balance=$($BINARY q bank balances $ADDR --node $NODE_ADDR --output json | jq '.balances[] | select(.denom == "'$DENOM'") | .amount' | sed 's/\"//g')
     diff=$((total_balance-RESERVE))
 
-    # If there's nothing to delegate, wait for the next cycle.
-    if [ $diff -lt 1 ]; then
-       	echo "There's nothing to delegate, skipping cycle..."
-        sleep $INTERVAL_SEC
-       	continue
-    fi
-
     # Check if the diff is greater than or equal to the minimum delegation amount.
     if [ $diff -lt $MIN_DELEGATION ]; then
         echo "Minimum delegation amount not reached yet ($diff$DENOM < $MIN_DELEGATION$DENOM), skipping cycle..."
