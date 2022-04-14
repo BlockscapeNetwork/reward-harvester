@@ -2,6 +2,9 @@
 
 Script for periodically withdrawing staking rewards and delegating them to a validator. Works with Cosmos SDK-based chains.
 
+> :warning: Due to bash only supporting 64-bit integers, this script won't work well with tokens that have many decimals.
+> To be sure, please don't use this script for tokens with more than 16 decimals.
+
 ## Prerequisites
 
 * Full or validator node with open RPC port
